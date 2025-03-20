@@ -1,6 +1,7 @@
 using System.Text;
 using System.Text.Json;
 using MassTransit;
+using Microsoft.EntityFrameworkCore;
 
 public class OutboxMessageConsumer : IConsumer<OutboxMessage>
 {
@@ -22,10 +23,33 @@ public class OutboxMessageConsumer : IConsumer<OutboxMessage>
         if (response.IsSuccessStatusCode)
         {
             Console.WriteLine($" [✔] Push notification sent to {message.UserId}");
+
+            // ✅ Mark message as Processed in DB
+            await MarkMessageAsProcessed(message.Id);
         }
         else
         {
             Console.WriteLine($" [!] Failed to send push notification: {response.StatusCode}");
+        }
+    }
+
+    private static async Task MarkMessageAsProcessed(long messageId)
+    {
+        try
+        {
+            using var dbContext = new OutboxDbContext();
+            var message = await dbContext.OutboxMessages.FirstOrDefaultAsync(m => m.Id == messageId);
+
+            if (message != null)
+            {
+                message.Processed = true;
+                await dbContext.SaveChangesAsync();
+                Console.WriteLine($" [✔] Marked Outbox Message {messageId} as Processed.");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($" [!] Failed to update Processed flag: {ex.Message}");
         }
     }
 }

@@ -1,9 +1,9 @@
 services:
-  rabbitmq_consumer:
+  masstransit_consumer:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: rabbitmq_consumer
+    container_name: masstransit_consumer
     restart: always
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
