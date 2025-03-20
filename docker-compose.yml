@@ -1,0 +1,9 @@
+services:
+  rabbitmq_consumer:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: rabbitmq_consumer
+    restart: always
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
