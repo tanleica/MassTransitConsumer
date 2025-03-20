@@ -1,29 +1,43 @@
 using MassTransit;
+using Microsoft.Extensions.DependencyInjection;
 
+namespace MassTransitConsumer;
 class Program
 {
     static async Task Main()
     {
-        Console.WriteLine(" [*] MassTransitConsumer Starting...");
+        Console.WriteLine(" [*] MassTransitConsumer is starting...");
 
-        var busControl = Bus.Factory.CreateUsingRabbitMq(cfg =>
+        // 🔹 Set up Dependency Injection (DI)
+        var services = new ServiceCollection();
+
+        // 🔹 Register MassTransit and Consumer
+        services.AddMassTransit(cfg =>
         {
-            cfg.Host("rabbitmq", h =>
-            {
-                h.Username("admin");
-                h.Password("A123231312a@");
-            });
+            cfg.AddConsumer<OutboxMessageConsumer>(); // ✅ Register the consumer
 
-            cfg.ReceiveEndpoint("outbox-queue", e =>
+            cfg.UsingRabbitMq((context, cfg) =>
             {
-                e.Consumer<OutboxMessageConsumer>();
+                cfg.Host("159.223.59.17", h =>
+                {
+                    h.Username("admin");
+                    h.Password("A123231312a@");
+                });
+
+                cfg.ReceiveEndpoint("outbox-queue_skipped", e =>
+                {
+                    e.ConfigureConsumer<OutboxMessageConsumer>(context); // ✅ Fix: use DI `context`
+                });
             });
         });
 
+        var serviceProvider = services.BuildServiceProvider();
+
+        var busControl = serviceProvider.GetRequiredService<IBusControl>();
+
         await busControl.StartAsync();
-        Console.WriteLine(" [✔] MassTransitConsumer Listening... Press Enter to exit.");
-        
-        Console.ReadLine();
-        await busControl.StopAsync();
+        Console.WriteLine(" [*] MassTransitConsumer is now listening on 'outbox-queue'...");
+
+        await Task.Delay(-1); // ✅ Keeps the app running
     }
 }

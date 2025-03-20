@@ -1,3 +1,4 @@
+namespace MassTransitConsumer;
 public class OutboxMessage
 {
     public long Id { get; set; }

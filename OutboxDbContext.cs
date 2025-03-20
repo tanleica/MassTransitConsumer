@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-
+namespace MassTransitConsumer;
 public class OutboxDbContext : DbContext
 {
     public DbSet<OutboxMessage> OutboxMessages { get; set; } = null!;

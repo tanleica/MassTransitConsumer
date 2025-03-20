@@ -3,6 +3,7 @@ using System.Text.Json;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
 
+namespace MassTransitConsumer;
 public class OutboxMessageConsumer : IConsumer<OutboxMessage>
 {
     private static readonly HttpClient httpClient = new();
